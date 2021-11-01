@@ -1,0 +1,18 @@
+3 maneiras de aceder a um pixel em opencv:
+a) img.at(R, c)
+b) img.ptr()
+c) iteradores (também estao disponiveis na Mat)
+
+idx = colunas x linhas + coluna
+
+de idx para 2dimensoes: l = idx / (div inteira) colunas e as colunas = idx % colunas
+
+PARA IMANAGENS A CORES: linhas x colunas x 3
+l = idx / (div inteira) (colunas x 3 ) e as colunas = idx % (colunas x 3) (acho que o x3 é aqui)
+
+histogramas vao ser mt fundamentais para o projetos, uma maneira para entender cor será a olhar para o histograma 
+
+primeiro por a camara a funcinar, 
+
+na parte da cor: ver coisas de segmentação , e ver as cores em diferentes condicoes, por ex c luz do sol, luz artificial, decidir quantas cores de legos queremos ler 
+
