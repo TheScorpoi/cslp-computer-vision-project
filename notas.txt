@@ -16,3 +16,19 @@ primeiro por a camara a funcinar,
 
 na parte da cor: ver coisas de segmentação , e ver as cores em diferentes condicoes, por ex c luz do sol, luz artificial, decidir quantas cores de legos queremos ler 
 
+
+notas 2/11/21
+
+filtros de media para suavizar a imagem
+
+forma de deitar fora o pinos dos legos, é filtrar a imagem e deitamos fora a parte de cima dos legos, (acho que com blur), e ir mexendos nos filtros até a imagem ficar da maneira que nos queremos até a parte de cima
+
+os operadores morfologicos sao para ter a imagem melhor 
+
+é mais facil segmentar em HSV do que RGB
+
+RGB -> HSV -> BLUR -> INRANGE -> OP. MORFOLOGICOS -> (MAIS OQ VAMOS DAR A PROXIMA AULA)
+
+-> podemos calibrar tipo agr com uma peça 3x3 a x distancia da camara, o sistema aprende, e depois se x pixeis sao 3 cm, ent y sao 6 cm (ex. meramente ilustrativo)
+
+
