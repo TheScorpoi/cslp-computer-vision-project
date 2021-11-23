@@ -1,3 +1,0 @@
-/home/sobral/Desktop/3ANO/cslp/cslp-computer-vision-project/src/CMakeFiles/rebuild_cache.dir
-/home/sobral/Desktop/3ANO/cslp/cslp-computer-vision-project/src/CMakeFiles/ComputerVision.dir
-/home/sobral/Desktop/3ANO/cslp/cslp-computer-vision-project/src/CMakeFiles/edit_cache.dir
