@@ -1,0 +1,26 @@
+PLANEAMENTO:
+
+CALIBRAR A CÂMERA:
+
+    - Adaptar o código deste link para usá-lo com a câmera:
+    https://docs.opencv.org/4.x/d3/dc1/tutorial_basic_linear_transform.html
+    - Ter uma peça padrão, cujos valores de cor são conhecidos para uma certa iluminação
+    - Ajustar a gama, o brilho e o contraste até que a cor conhecida seja obtida
+
+VERIFICAR CORES PRESENTES:
+
+    - Ter uma série de valores conhecidos sobre as cores das peças de LEGO
+    - Após a calibragem da câmera, verificar as cores presentes
+    - Separar as peças por cor
+
+VERIFICAR FORMATOS E TAMANHOS:
+
+    *Primeiramente:
+        - Manter a câmera a uma distância fixa das peças
+        - Identificar o formato
+        - Fazer cálculos para saber o tamanho da peça
+    *Em seguida:
+        - Saber o tamanho da peça padrão (em pixels?)
+        - Conforme a distância da peça à câmera, usar um coeficiente nos cálculos para recalcular o tamanho
+
+https://www.youtube.com/watch?v=Tj4zEX_pdUg
