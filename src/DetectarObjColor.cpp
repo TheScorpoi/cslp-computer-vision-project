@@ -28,7 +28,6 @@ const int MAX_OBJECT_AREA = FRAME_HEIGHT * FRAME_WIDTH / 1.5;
 void drawObject(vector<Object> theObjects, Mat &frame, Mat &temp, vector<vector<Point> > contours, vector<Vec4i> hierarchy) {
     for (int i = 0; i < theObjects.size(); i++) {
         cv::drawContours(frame, contours, i, theObjects.at(i).getColor(), 3, 8, hierarchy);
-        cv::circle(frame, theObjects.at(i), 5, theObjects.at(i).getColor(), 2);
         cv::putText(frame, theObjects.at(i).getType(), cv::Point(theObjects.at(i).getXPos(), theObjects.at(i).getYPos() - 20), 1, 2, theObjects.at(i).getColor());
     }
 }
