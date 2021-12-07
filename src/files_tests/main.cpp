@@ -10,7 +10,7 @@ using std::endl;
 using namespace cv;
 
 int main() {
-    std::string image_path = "../images/lego2.png";
+    std::string image_path = "../../images/lego2.png";
     Mat img = imread(image_path, IMREAD_COLOR);
 
     if (img.empty()) {

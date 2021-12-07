@@ -11,14 +11,17 @@ Mat redFilter(const Mat& src)
     assert(src.type() == CV_8UC3);
 
     Mat redOnly;
-    inRange(src, Scalar(0, 0, 0), Scalar(0, 0, 255), redOnly);
+    inRange(src, Scalar(0, 0, 0), Scalar(0, 255, 0), redOnly);
+
+    Mat greenOnly;
+    inRange(src, Scalar(0, 0, 0), Scalar(0, 255, 0), greenOnly);
 
     return redOnly;
 }
 
 int main(int argc, char** argv)
 {
-    Mat input = imread("../images/123.png");
+    Mat input = imread("../../images/123.png");
 
     imshow("input", input);
     waitKey();
