@@ -14,14 +14,14 @@ Object::Object(string name) {
     setType(name);
 
     if (name == "blue") {
-        setHSVmin(Scalar(92, 0, 0));
-        setHSVmax(Scalar(124, 256, 256));
+        setHSVmin(Scalar(80, 100, 100));
+        setHSVmax(Scalar(210, 256, 256));
 
         // BGR value for Blue:
         setColor(Scalar(255, 0, 0));
     }
     if (name == "green") {
-        setHSVmin(Scalar(34, 50, 50));
+        setHSVmin(Scalar(75, 200, 200));
         setHSVmax(Scalar(80, 220, 200));
 
         // BGR value for Green:

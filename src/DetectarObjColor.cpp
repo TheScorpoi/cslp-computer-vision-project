@@ -25,13 +25,26 @@ const int MAX_OBJECT_AREA = FRAME_HEIGHT * FRAME_WIDTH / 1.5;
  * @param contours 
  * @param hierarchy 
  */
-void drawObject(vector<Object> theObjects, Mat &frame, Mat &temp, vector<vector<Point> > contours, vector<Vec4i> hierarchy) {
+void drawObject(vector<Object> theObjects, Mat &frame, Mat &temp, vector<vector<Point> > contours, vector<Vec4i> hierarchy, Rect c, string shapeName) {
     for (int i = 0; i < theObjects.size(); i++) {
         cv::drawContours(frame, contours, i, theObjects.at(i).getColor(), 3, 8, hierarchy);
-        cv::putText(frame, theObjects.at(i).getType(), cv::Point(theObjects.at(i).getXPos(), theObjects.at(i).getYPos() - 20), 1, 2, theObjects.at(i).getColor());
+        cv::putText(frame, theObjects.at(i).getType() + " > " + to_string(c.area()) + " - " + shapeName, cv::Point(theObjects.at(i).getXPos(), theObjects.at(i).getYPos() - 20), 1, 2, theObjects.at(i).getColor());
     }
 }
 
+/**
+ * @brief 
+ * 
+ * @param c 
+ * @return string 
+ */
+string returnShapeName(Rect c) {
+    if (c.width > c.height) {
+        return "Rectangle";
+    } else {
+        return "Circle" ;
+    }
+}
 /**
  * @brief This function is used to erode and dilate original image
  * The objetive with this two functions is to remove noise mainly, and isolate the object
@@ -41,7 +54,9 @@ void drawObject(vector<Object> theObjects, Mat &frame, Mat &temp, vector<vector<
  */
 void morphologicalOperations(Mat &thresh) {
     Mat erodeElement = getStructuringElement(MORPH_RECT, Size(3, 3));
-    erode(thresh, thresh, erodeElement);
+
+    // Apply the erosion operation
+    erode(thresh, thresh, erodeElement);    
     erode(thresh, thresh, erodeElement);
 
     Mat dilateElement = getStructuringElement(MORPH_RECT, Size(9, 9));
@@ -70,6 +85,8 @@ void trackFilteredObject(Object theObject, Mat threshold, Mat HSV, Mat &cameraFe
     findContours(temp, contours, hierarchy, RETR_CCOMP, CHAIN_APPROX_SIMPLE);
     double refArea = 0;
     bool objectFound = false;
+    double area = 0;
+    cv::Rect c;
     if (hierarchy.size() > 0) {
         int numObjects = hierarchy.size();
         //! if numObjects > MAX_NUM_OBJECTS probably there are much noise in the image
@@ -80,7 +97,8 @@ void trackFilteredObject(Object theObject, Mat threshold, Mat HSV, Mat &cameraFe
             for (int index = 0; index >= 0; index = hierarchy[index][0]) {
                 // use moments method to find our filtered object
                 Moments moment = moments((cv::Mat)contours[index]);
-                double area = moment.m00;
+                c = cv::boundingRect((cv::Mat)contours[index]);
+                area = moment.m00;
                 if (area > MIN_OBJECT_AREA) {
                     Object object;
                     object.setXPos(moment.m10 / area);
@@ -95,25 +113,31 @@ void trackFilteredObject(Object theObject, Mat threshold, Mat HSV, Mat &cameraFe
             // if object found, draw the contours around it
             if (objectFound == true) {
                 // draw object location on screen
-                drawObject(objects, cameraFeed, temp, contours, hierarchy);
+                string shapeName = returnShapeName(c);
+                drawObject(objects, cameraFeed, temp, contours, hierarchy, c, shapeName);
             }
         } else
             putText(cameraFeed, "A LOT OF OBJECTS ON IMAGE", Point(0, 50), 1, 2, Scalar(0, 0, 255), 2);
     }
 }
 
+
 int main(int argc, char *argv[]) {
     Object blue("blue"), yellow("yellow"), red("red"), green("green");
-    Mat cameraFeed, threshold, HSV;
+    Mat cameraFeed, threshold, HSV, blur;
     VideoCapture capture;
     capture.open(0);
     // infinite loop, searching for the objects and displaying the result in the window named "Image"
     while (1) {
         // store image on cameraFeed
         capture.read(cameraFeed);
+
+        GaussianBlur(cameraFeed, blur, Size(5,5), 0, 0);
+
         // convert BGR to HSV colorspace
-        cvtColor(cameraFeed, HSV, COLOR_BGR2HSV);
+        cvtColor(blur, HSV,  COLOR_BGR2HSV);
         // BLUE
+        // antes de aplicar os operadores morfologicos fazer segmentacao para (por isto a preto e branco)
         inRange(HSV, blue.getHSVmin(), blue.getHSVmax(), threshold);
         morphologicalOperations(threshold);
         trackFilteredObject(blue, threshold, HSV, cameraFeed);
