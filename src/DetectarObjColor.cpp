@@ -25,10 +25,20 @@ const int MAX_OBJECT_AREA = FRAME_HEIGHT * FRAME_WIDTH / 1.5;
  * @param contours 
  * @param hierarchy 
  */
+
+string get_size(Rect c) {
+    int w, h;
+    w = c.width/8;
+    h = c.height/8;
+    cout << w << h << "\n";
+    return w+"x"+h;
+}
+
+
 void drawObject(vector<Object> theObjects, Mat &frame, Mat &temp, vector<vector<Point> > contours, vector<Vec4i> hierarchy, Rect c, string shapeName) {
     for (int i = 0; i < theObjects.size(); i++) {
         cv::drawContours(frame, contours, i, theObjects.at(i).getColor(), 3, 8, hierarchy);
-        cv::putText(frame, theObjects.at(i).getType() + " > " + to_string(c.area()) + " - " + shapeName, cv::Point(theObjects.at(i).getXPos(), theObjects.at(i).getYPos() - 20), 1, 2, theObjects.at(i).getColor());
+        cv::putText(frame, theObjects.at(i).getType() + " > " + get_size(c) + " - " + shapeName, cv::Point(theObjects.at(i).getXPos(), theObjects.at(i).getYPos() - 20), 1, 2, theObjects.at(i).getColor());
     }
 }
 
@@ -41,7 +51,11 @@ void drawObject(vector<Object> theObjects, Mat &frame, Mat &temp, vector<vector<
 string returnShapeName(Rect c) {
     if (c.width > c.height) {
         return "Rectangle";
-    } else {
+    } 
+    else if (c.width == c.height) {
+        return "Square";
+    }
+    else {
         return "Circle" ;
     }
 }
@@ -87,6 +101,7 @@ void trackFilteredObject(Object theObject, Mat threshold, Mat HSV, Mat &cameraFe
     bool objectFound = false;
     double area = 0;
     cv::Rect c;
+    vector<vector<Point>> hull(contours.size());
     if (hierarchy.size() > 0) {
         int numObjects = hierarchy.size();
         //! if numObjects > MAX_NUM_OBJECTS probably there are much noise in the image
@@ -96,6 +111,7 @@ void trackFilteredObject(Object theObject, Mat threshold, Mat HSV, Mat &cameraFe
         if (numObjects < MAX_NUM_OBJECTS) {
             for (int index = 0; index >= 0; index = hierarchy[index][0]) {
                 // use moments method to find our filtered object
+                cv::convexHull(cv::Mat(contours[index]), hull[index], false);
                 Moments moment = moments((cv::Mat)contours[index]);
                 c = cv::boundingRect((cv::Mat)contours[index]);
                 area = moment.m00;
@@ -114,7 +130,9 @@ void trackFilteredObject(Object theObject, Mat threshold, Mat HSV, Mat &cameraFe
             if (objectFound == true) {
                 // draw object location on screen
                 string shapeName = returnShapeName(c);
-                drawObject(objects, cameraFeed, temp, contours, hierarchy, c, shapeName);
+                if (hull.size()==4) {
+                    drawObject(objects, cameraFeed, temp, contours, hierarchy, c, shapeName);
+                }           
             }
         } else
             putText(cameraFeed, "A LOT OF OBJECTS ON IMAGE", Point(0, 50), 1, 2, Scalar(0, 0, 255), 2);
