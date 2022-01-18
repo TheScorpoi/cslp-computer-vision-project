@@ -49,10 +49,10 @@ void drawObject(vector<Object> theObjects, Mat &frame, Mat &temp, vector<vector<
  * @return string 
  */
 string returnShapeName(Rect c) {
-    if (c.width > c.height) {
+    if (lround(c.width) > lround(c.height)) {
         return "Rectangle";
     } 
-    else if (c.width == c.height) {
+    else if (lround(c.width) == lround(c.height)) {
         return "Square";
     }
     else {
@@ -130,9 +130,9 @@ void trackFilteredObject(Object theObject, Mat threshold, Mat HSV, Mat &cameraFe
             if (objectFound == true) {
                 // draw object location on screen
                 string shapeName = returnShapeName(c);
-                if (hull.size()==4) {
+                //if (hull.size()==4) {
                     drawObject(objects, cameraFeed, temp, contours, hierarchy, c, shapeName);
-                }           
+                //}           
             }
         } else
             putText(cameraFeed, "A LOT OF OBJECTS ON IMAGE", Point(0, 50), 1, 2, Scalar(0, 0, 255), 2);
