@@ -157,13 +157,20 @@ void calibrateCamera() {
     cin >> w;
     cout << "Type piece's height: ";
     cin >> h;
-    //track an object until size is selected and get a Rect object
+    // track an object until size is selected and get a Rect object
     setPixelSize(c, w, h);
 }
 
 void setPixelSize(Rect c, int w, int h) {
-    PIXEL_SIZE_WIDTH = c.width/w;
-    PIXEL_SIZE_HEIGHT = c.height/h;
+    // saves the pixel size
+    if (w>h && c.width>c.height) {
+        PIXEL_SIZE_WIDTH = c.width/w;
+        PIXEL_SIZE_HEIGHT = c.height/h;
+    }
+    else {
+        PIXEL_SIZE_WIDTH = c.width/h;
+        PIXEL_SIZE_HEIGHT = c.height/w;
+    }
 }
 
 void detectInRealTime() {
