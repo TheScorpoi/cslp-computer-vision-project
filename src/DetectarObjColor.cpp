@@ -1,3 +1,8 @@
+#include <getopt.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <fstream>
+
 #include <iostream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -5,12 +10,12 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include <getopt.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 #include "Object.cpp"
 #include "Object.h"
+
+using namespace std;
+using namespace cv;
 
 const int FRAME_WIDTH = 640;
 const int FRAME_HEIGHT = 480;
@@ -160,7 +165,7 @@ void detectInRealTime() {
             morphologicalOperations(threshold);
             trackFilteredObject(obj, threshold, HSV, cameraFeed);
         }
-        /* maneira estática 
+        /* maneira estática
         // BLUE
         // antes de aplicar os operadores morfologicos fazer segmentacao para (por isto a preto e branco)
         inRange(HSV, blue.getHSVmin(), blue.getHSVmax(), threshold);
@@ -183,50 +188,142 @@ void detectInRealTime() {
         // imshow("windowName1", HSV);
         imshow("Image", cameraFeed);
 
-        waitKey(80); //taxa de refresh da camara, > menor taxa, < maior taxa
+        waitKey(80);  // taxa de refresh da camara, > menor taxa, < maior taxa
+    }
+}
+void on_mouse_click(int event, int x, int y, int flags, void *ptr) {
+    ofstream file;
+    file.open("../output/file.txt");
+    if (event == cv::EVENT_LBUTTONDOWN) {
+        cv::Mat *snapshot = (cv::Mat *)ptr;
+        cv::Mat &img = *((cv::Mat *)(ptr));
+        cv::Vec3b pixel = snapshot->at<cv::Vec3b>(x, y);
+        cv::Vec3b bgrPixel(snapshot->at<cv::Vec3b>(y, x));
+        circle(*snapshot, cv::Point(x, y), 4, cv::Scalar(0, 0, 255), cv::FILLED, 8, 0);
+        cv::imshow("Snapshot", *snapshot);
+        int b, g, r;
+        b = pixel[0];
+        g = pixel[1];
+        r = pixel[2];
+
+        cv::Mat3b bgr(bgrPixel);
+        cv::Mat3b hsv;
+        cv::cvtColor(bgr, hsv, cv::COLOR_BGR2HSV);
+
+        cv::Vec3b hsvPixel(hsv.at<cv::Vec3b>(0, 0));
+
+        std::string rgbText = "[" + std::to_string(r) + ", " + std::to_string(g) + ", " + std::to_string(b) + "]";
+        cout << "rgb " << rgbText << std::endl;
+        cout << "hsv " << hsvPixel << endl;
+
+        int thresh = 40;
+        cv::Scalar minHSV = cv::Scalar(hsvPixel.val[0] - thresh, hsvPixel.val[1] - thresh, hsvPixel.val[2] - thresh);
+        cv::Scalar maxHSV = cv::Scalar(hsvPixel.val[0] + thresh, hsvPixel.val[1] + thresh, hsvPixel.val[2] + thresh);
+        cv::imshow("Snapshot", *snapshot);
+
+        string colour_name;
+        cout << "Colour Name? ";
+        cin >> colour_name;
+        
+        file << colour_name << " - " << rgbText << " - " << hsvPixel << " - " << minHSV << " - " << maxHSV << endl;
+        file << "------------------------------" << endl;
+        file.close();
+        // guardar num ficheiro os hsvmin hsvmax o rgb e pedir um nome para a cor
+        // cout << minHSV << endl;
+        // cout << maxHSV << endl;
     }
 }
 
-int main(int argc, char *argv[]) {
-    int c;
-    int digit_optind = 0;
-    int option_index = 0;
-    struct option long_options[] = {
-        {"calibrate", required_argument, 0, 'c'},
-        {"add_colors", no_argument, 0, 'a'},
-        {"exit", no_argument, 0, 'e'}};
+void readFileCreateColous() {
+    ifstream file;
+    file.open("../output/file.txt");
+    string line;
+    while (getline(file, line)) {
+        cout << line << endl;
+    }
+    file.close();
 
-    while ((c = getopt_long(argc, argv, "ca:en", long_options, &option_index)) != -1) {
-        int this_option_optind = optind ? optind : 1;
-        switch (c) {
-            case 'c':
-                //opcao para calibrar a camara
-                cout << "Calibrating Camera" << endl;
-                // chamar aqui a funcao que calibra a camara
-                break;
-            case 'a':
-                cout << "Add colours..." << endl;
-                //opcao para adicionar cores
-                //chamar a funcao que adiciona novas cores
-                break;
-            case 'e':
-                cout << "Exiting..." << endl;
-                exit(EXIT_SUCCESS);
-            case 'n':
-                cout << "Detect LEGO pieces in Real Time" << endl;
-                detectInRealTime();
-                break;
-            default:
-                cout << "USAGE: " << endl;
+    //objetos com as informacoes das cores que estao no ficheiro
+    //po-los num array em q a main consiga aceder aos objetos
+    //correr normalmente
+
+
+}
+
+void selectColoursWithMouse() {
+    cv::VideoCapture capture(0);
+
+    if (!capture.isOpened()) {
+        std::cout << "Error opening VideoCapture." << std::endl;
+    }
+
+    cv::Mat frame, snapshot;
+    capture.read(frame);
+
+    snapshot = cv::Mat(frame.size(), CV_8UC3, cv::Scalar(23, 32, 32));
+    cv::imshow("Snapshot", snapshot);
+
+    cv::setMouseCallback("Snapshot", on_mouse_click, &snapshot);
+
+    int keyVal;
+    while (1) {
+        if (!capture.read(frame)) {
+            break;
+        }
+        cv::imshow("Video", frame);
+
+        keyVal = cv::waitKey(1) & 0xFF;
+        if (keyVal == 113 || keyVal == 81) {  // q
+            break;
+        } else if (keyVal == 115 || keyVal == 83) {  // S ou s
+            snapshot = frame.clone();
+            cv::imshow("Snapshot", snapshot);
         }
     }
-
-    if (optind < argc) {
-        printf("non-option ARGV-elements: ");
-        while (optind < argc)
-            printf("%s ", argv[optind++]);
-        printf("\n");
-    }
-
-    exit(EXIT_SUCCESS);
 }
+
+    int main(int argc, char *argv[]) {
+        int c;
+        int digit_optind = 0;
+        int option_index = 0;
+        struct option long_options[] = {
+            {"calibrate", required_argument, 0, 'c'},
+            {"add_colors", no_argument, 0, 'a'},
+            {"exit", no_argument, 0, 'e'}};
+
+        while ((c = getopt_long(argc, argv, "caen", long_options, &option_index)) != -1) {
+            int this_option_optind = optind ? optind : 1;
+            switch (c) {
+                case 'c':
+                    // opcao para calibrar a camara
+                    cout << "Calibrating Camera" << endl;
+                    // chamar aqui a funcao que calibra a camara
+                    break;
+                case 'a':
+                    cout << "Add colours..." << endl;
+                    // opcao para adicionar cores
+                    selectColoursWithMouse();
+                    // chamar a funcao que adiciona novas cores
+                    break;
+                case 'e':
+                    readFileCreateColous();
+                    cout << "Exiting..." << endl;
+                    exit(EXIT_SUCCESS);
+                case 'n':
+                    cout << "Detect LEGO pieces in Real Time" << endl;
+                    detectInRealTime();
+                    break;
+                default:
+                    cout << "USAGE: " << endl;
+            }
+        }
+
+        if (optind < argc) {
+            printf("non-option ARGV-elements: ");
+            while (optind < argc)
+                printf("%s ", argv[optind++]);
+            printf("\n");
+        }
+
+        exit(EXIT_SUCCESS);
+    }
