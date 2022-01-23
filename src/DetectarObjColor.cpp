@@ -22,8 +22,8 @@ const int FRAME_HEIGHT = 480;
 const int MAX_NUM_OBJECTS = 35;
 const int MIN_OBJECT_AREA = 20 * 20;
 const int MAX_OBJECT_AREA = FRAME_HEIGHT * FRAME_WIDTH / 1.5;
-const double PIXEL_SIZE_WIDTH = 0;
-const double PIXEL_SIZE_HEIGHT = 0;
+double PIXEL_SIZE_WIDTH = 0;
+double PIXEL_SIZE_HEIGHT = 0;
 
 /**
  * @brief This function is used to mark on the window the detected objects
