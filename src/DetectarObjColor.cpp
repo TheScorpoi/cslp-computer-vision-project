@@ -28,6 +28,8 @@ const int FRAME_HEIGHT = 480;
 const int MAX_NUM_OBJECTS = 35;
 const int MIN_OBJECT_AREA = 20 * 20;
 const int MAX_OBJECT_AREA = FRAME_HEIGHT * FRAME_WIDTH / 1.5;
+double PIXEL_SIZE_WIDTH = 0;
+double PIXEL_SIZE_HEIGHT = 0;
 
 /**
  * @brief This function is used to mark on the window the detected objects
@@ -42,10 +44,15 @@ const int MAX_OBJECT_AREA = FRAME_HEIGHT * FRAME_WIDTH / 1.5;
 
 string get_size(Rect c) {
     int w, h;
-    w = c.width / 8;
-    h = c.height / 8;
-    cout << w << h << "\n";
-    return w + "x" + h;
+    if (PIXEL_SIZE_WIDTH>PIXEL_SIZE_HEIGHT) {
+        w = c.width / PIXEL_SIZE_WIDTH;
+        h = c.height / PIXEL_SIZE_HEIGHT;
+    }
+    else {
+        w = c.width / PIXEL_SIZE_HEIGHT;
+        h = c.height / PIXEL_SIZE_WIDTH;
+    }
+    return to_string(w) + "x" + to_string(h);
 }
 
 void drawObject(vector<Object> theObjects, Mat &frame, Mat &temp, vector<vector<Point>> contours, vector<Vec4i> hierarchy, Rect c, string shapeName) {
@@ -147,6 +154,28 @@ void trackFilteredObject(Object theObject, Mat threshold, Mat HSV, Mat &cameraFe
             }
         } else
             putText(cameraFeed, "A LOT OF OBJECTS ON IMAGE", Point(0, 50), 1, 2, Scalar(0, 0, 255), 2);
+    }
+}
+
+void calibrateCamera() {
+    int w, h;
+    cout << "Type piece's width: ";
+    cin >> w;
+    cout << "Type piece's height: ";
+    cin >> h;
+    // track an object until size is selected and get a Rect object
+    setPixelSize(c, w, h);
+}
+
+void setPixelSize(Rect c, int w, int h) {
+    // saves the pixel size
+    if (w>h && c.width>c.height) {
+        PIXEL_SIZE_WIDTH = c.width/w;
+        PIXEL_SIZE_HEIGHT = c.height/h;
+    }
+    else {
+        PIXEL_SIZE_WIDTH = c.width/h;
+        PIXEL_SIZE_HEIGHT = c.height/w;
     }
 }
 
@@ -341,6 +370,7 @@ void selectColoursWithMouse() {
                 case 'a':
                     cout << "Add colours..." << endl;
                     // opcao para adicionar cores
+                    
                     selectColoursWithMouse();
                     // chamar a funcao que adiciona novas cores
                     break;
@@ -355,14 +385,49 @@ void selectColoursWithMouse() {
                 default:
                     cout << "USAGE: " << endl;
             }
-        }
+int main(int argc, char *argv[]) {
+    int c;
+    int digit_optind = 0;
+    int option_index = 0;
+    struct option long_options[] = {
+        {"calibrate", required_argument, 0, 'c'},
+        {"add_colors", no_argument, 0, 'a'},
+        {"exit", no_argument, 0, 'e'}};
 
-        if (optind < argc) {
-            printf("non-option ARGV-elements: ");
-            while (optind < argc)
-                printf("%s ", argv[optind++]);
-            printf("\n");
+    while ((c = getopt_long(argc, argv, "caen", long_options, &option_index)) != -1) {
+        int this_option_optind = optind ? optind : 1;
+        switch (c) {
+            case 'c':
+                // opcao para calibrar a camara
+                cout << "Calibrating Camera" << endl;
+                // chamar aqui a funcao que calibra a camara
+                calibrateCamera();
+                break;
+            case 'a':
+                cout << "Add colours..." << endl;
+                // opcao para adicionar cores
+                selectColoursWithMouse();
+                // chamar a funcao que adiciona novas cores
+                break;
+            case 'e':
+                readFileCreateColous();
+                cout << "Exiting..." << endl;
+                exit(EXIT_SUCCESS);
+            case 'n':
+                cout << "Detect LEGO pieces in Real Time" << endl;
+                detectInRealTime();
+                break;
+            default:
+                cout << "USAGE: " << endl;
         }
-
-        exit(EXIT_SUCCESS);
     }
+
+    if (optind < argc) {
+        printf("non-option ARGV-elements: ");
+        while (optind < argc)
+            printf("%s ", argv[optind++]);
+        printf("\n");
+    }
+
+    exit(EXIT_SUCCESS);
+}
