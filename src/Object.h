@@ -13,6 +13,12 @@ class Object {
     ~Object(void);
 
     Object(string name);
+    Object(string name, Scalar hsvMin, Scalar hsvMax, int r, int g, int b) {
+        this->type = name;
+        this->HSVmin = hsvMin;
+        this->HSVmax = hsvMax;
+        this->Color = Scalar(r, g, b);
+    };
 
     int getXPos();
     void setXPos(int x);
@@ -35,6 +41,12 @@ class Object {
     void setColor(Scalar c) {
         Color = c;
     }
+    friend ostream& operator<<(ostream& os, const Object& o);
+    friend istream &operator>>(istream &input, Object &o) {
+        input >> o.type;
+        return input;
+    }
+    
 
    private:
     int xPos, yPos;
@@ -42,3 +54,7 @@ class Object {
     Scalar HSVmin, HSVmax;
     Scalar Color;
 };
+ostream &operator<<(ostream &os, const Object &o) {
+        os << o.type << " - " << o.HSVmin << " - " << o.HSVmax << " - " << o.Color << endl;
+        return os;
+    }

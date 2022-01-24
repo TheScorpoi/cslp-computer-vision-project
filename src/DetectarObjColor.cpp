@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fstream>
+#include <list>
 
 #include <iostream>
 #include <opencv2/core/core.hpp>
@@ -16,6 +17,11 @@
 
 using namespace std;
 using namespace cv;
+
+using std::cout; using std::ofstream;
+using std::endl; using std::string;
+using std::fstream;
+
 
 const int FRAME_WIDTH = 640;
 const int FRAME_HEIGHT = 480;
@@ -192,15 +198,13 @@ void detectInRealTime() {
     }
 }
 void on_mouse_click(int event, int x, int y, int flags, void *ptr) {
-    ofstream file;
-    file.open("../output/file.txt");
     if (event == cv::EVENT_LBUTTONDOWN) {
         cv::Mat *snapshot = (cv::Mat *)ptr;
         cv::Mat &img = *((cv::Mat *)(ptr));
         cv::Vec3b pixel = snapshot->at<cv::Vec3b>(x, y);
         cv::Vec3b bgrPixel(snapshot->at<cv::Vec3b>(y, x));
         circle(*snapshot, cv::Point(x, y), 4, cv::Scalar(0, 0, 255), cv::FILLED, 8, 0);
-        cv::imshow("Snapshot", *snapshot);
+        cv::imshow("Capture", *snapshot);
         int b, g, r;
         b = pixel[0];
         g = pixel[1];
@@ -219,35 +223,65 @@ void on_mouse_click(int event, int x, int y, int flags, void *ptr) {
         int thresh = 40;
         cv::Scalar minHSV = cv::Scalar(hsvPixel.val[0] - thresh, hsvPixel.val[1] - thresh, hsvPixel.val[2] - thresh);
         cv::Scalar maxHSV = cv::Scalar(hsvPixel.val[0] + thresh, hsvPixel.val[1] + thresh, hsvPixel.val[2] + thresh);
-        cv::imshow("Snapshot", *snapshot);
 
         string colour_name;
         cout << "Colour Name? ";
         cin >> colour_name;
-        
-        file << colour_name << " - " << rgbText << " - " << hsvPixel << " - " << minHSV << " - " << maxHSV << endl;
-        file << "------------------------------" << endl;
-        file.close();
-        // guardar num ficheiro os hsvmin hsvmax o rgb e pedir um nome para a cor
-        // cout << minHSV << endl;
-        // cout << maxHSV << endl;
+        string filename("../../output/tmp2.txt");
+        ofstream out(filename.c_str(), fstream::app); //append mode on
+        Object ob1(colour_name, minHSV, maxHSV, r, g, b);
+        out << ob1;
     }
 }
 
-void readFileCreateColous() {
-    ifstream file;
-    file.open("../output/file.txt");
-    string line;
-    while (getline(file, line)) {
-        cout << line << endl;
+vector<string> split (const string &s, char delim) {
+    vector<string> result;
+    stringstream ss (s);
+    string item;
+
+    while (getline (ss, item, delim)) {
+        result.push_back (item);
     }
+    
+
+    return result;
+}
+
+vector<Object> readFileCreateColous() {
+    //criar aqui um array do tipo vector<Object> e retorna-lo
+    ifstream file;
+    file.open("../../output/tmp2.txt");
+    string line;
+    cout << "Reading file..." << endl;
+    while(getline (file, line)) {
+        vector<string> tokens = split(line, ' - ');
+        string colour_name = tokens[0];
+        string hsvMin = tokens[1];
+        string hsvMax = tokens[2];
+        string rgb = tokens[3];
+        string rgb_  = tokens[4];
+        cout << "nome: " << colour_name << " min " << hsvMin << "max  " << hsvMax << " --- " << rgb << " rgb__ " << rgb_ << endl;
+        /*int min_h = stoi(tokens[1]);
+        int min_s = stoi(tokens[2]);
+        int min_v = stoi(tokens[3]);
+        int max_h = stoi(tokens[4]);
+        int max_s = stoi(tokens[5]);
+        int max_v = stoi(tokens[6]);
+        int r = stoi(tokens[7]);
+        int g = stoi(tokens[8]);
+        int b = stoi(tokens[9]);*/
+        //Object ob1(colour_name, min_h, min_s, min_v, max_h, max_s, max_v, r, g, b);
+        //objects.push_back(ob1);
+    }
+
+    
+    
     file.close();
+    
 
     //objetos com as informacoes das cores que estao no ficheiro
     //po-los num array em q a main consiga aceder aos objetos
     //correr normalmente
-
-
 }
 
 void selectColoursWithMouse() {
@@ -261,9 +295,9 @@ void selectColoursWithMouse() {
     capture.read(frame);
 
     snapshot = cv::Mat(frame.size(), CV_8UC3, cv::Scalar(23, 32, 32));
-    cv::imshow("Snapshot", snapshot);
+    cv::imshow("Capture", snapshot);
 
-    cv::setMouseCallback("Snapshot", on_mouse_click, &snapshot);
+    cv::setMouseCallback("Capture", on_mouse_click, &snapshot);
 
     int keyVal;
     while (1) {
@@ -274,10 +308,14 @@ void selectColoursWithMouse() {
 
         keyVal = cv::waitKey(1) & 0xFF;
         if (keyVal == 113 || keyVal == 81) {  // q
+            destroyAllWindows();
+            capture.release();
+            readFileCreateColous();
+            // detectInRealTime();
             break;
         } else if (keyVal == 115 || keyVal == 83) {  // S ou s
             snapshot = frame.clone();
-            cv::imshow("Snapshot", snapshot);
+            cv::imshow("Capture", snapshot);
         }
     }
 }
@@ -286,6 +324,7 @@ void selectColoursWithMouse() {
         int c;
         int digit_optind = 0;
         int option_index = 0;
+
         struct option long_options[] = {
             {"calibrate", required_argument, 0, 'c'},
             {"add_colors", no_argument, 0, 'a'},
