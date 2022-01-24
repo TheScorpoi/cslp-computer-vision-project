@@ -1,23 +1,14 @@
-#include <iostream>
-#include <fstream>
-
-using std::cout; using std::ofstream;
-using std::endl; using std::string;
-using std::fstream;
-
+#include <bits/stdc++.h>
+#include <boost/algorithm/string.hpp>
+using namespace std;
+ 
 int main()
 {
-    string text("Some huge text to write to\n");
-    string filename2("../../output/tmp2.txt");
-    fstream outfile;
-
-    outfile.open(filename2, std::ios_base::out);
-    if (!outfile.is_open()) {
-        cout << "failed to open " << filename2 << '\n';
-    } else {
-        outfile.write(text.data(), text.size());
-        cout << "Done Writing!" << endl;
-    }
-
-    return EXIT_SUCCESS;
+    string input("geeks\tfor\tgeeks");
+    vector<string> result;
+    boost::split(result, input, boost::is_any_of("\t"));
+ 
+    for (int i = 0; i < result.size(); i++)
+        cout << result[i] << endl;
+    return 0;
 }

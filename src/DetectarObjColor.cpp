@@ -1,10 +1,11 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <fstream>
-#include <list>
 
+#include <boost/algorithm/string.hpp>
+#include <fstream>
 #include <iostream>
+#include <list>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -18,10 +19,11 @@
 using namespace std;
 using namespace cv;
 
-using std::cout; using std::ofstream;
-using std::endl; using std::string;
+using std::cout;
+using std::endl;
 using std::fstream;
-
+using std::ofstream;
+using std::string;
 
 const int FRAME_WIDTH = 640;
 const int FRAME_HEIGHT = 480;
@@ -44,11 +46,10 @@ double PIXEL_SIZE_HEIGHT = 0;
 
 string get_size(Rect c) {
     int w, h;
-    if (PIXEL_SIZE_WIDTH>PIXEL_SIZE_HEIGHT) {
+    if (PIXEL_SIZE_WIDTH > PIXEL_SIZE_HEIGHT) {
         w = c.width / PIXEL_SIZE_WIDTH;
         h = c.height / PIXEL_SIZE_HEIGHT;
-    }
-    else {
+    } else {
         w = c.width / PIXEL_SIZE_HEIGHT;
         h = c.height / PIXEL_SIZE_WIDTH;
     }
@@ -156,7 +157,7 @@ void trackFilteredObject(Object theObject, Mat threshold, Mat HSV, Mat &cameraFe
             putText(cameraFeed, "A LOT OF OBJECTS ON IMAGE", Point(0, 50), 1, 2, Scalar(0, 0, 255), 2);
     }
 }
-
+/*
 void calibrateCamera() {
     int w, h;
     cout << "Type piece's width: ";
@@ -178,10 +179,11 @@ void setPixelSize(Rect c, int w, int h) {
         PIXEL_SIZE_HEIGHT = c.height/w;
     }
 }
-
-void detectInRealTime() {
+*/
+void detectInRealTime(vector<Object> objects) {
     Object blue("blue"), yellow("yellow"), red("red"), green("green");
     Object objArray[] = {Object("blue"), Object("yellow"), Object("red"), Object("green")};
+    vector<Object> new_objects = objects;
     Mat cameraFeed, threshold, HSV, blur;
     VideoCapture capture;
     capture.open(0);
@@ -195,7 +197,7 @@ void detectInRealTime() {
         // convert BGR to HSV colorspace
         cvtColor(blur, HSV, COLOR_BGR2HSV);
 
-        for (Object obj : objArray) {
+        for (Object obj : new_objects) {
             inRange(HSV, obj.getHSVmin(), obj.getHSVmax(), threshold);
             morphologicalOperations(threshold);
             trackFilteredObject(obj, threshold, HSV, cameraFeed);
@@ -257,39 +259,100 @@ void on_mouse_click(int event, int x, int y, int flags, void *ptr) {
         cout << "Colour Name? ";
         cin >> colour_name;
         string filename("../../output/tmp2.txt");
-        ofstream out(filename.c_str(), fstream::app); //append mode on
+        ofstream out(filename.c_str(), fstream::app);  // append mode on
         Object ob1(colour_name, minHSV, maxHSV, r, g, b);
         out << ob1;
     }
 }
 
-vector<string> split (const string &s, char delim) {
+vector<string> split(const string &s, char delim) {
     vector<string> result;
-    stringstream ss (s);
+    stringstream ss(s);
     string item;
 
-    while (getline (ss, item, delim)) {
-        result.push_back (item);
+    while (getline(ss, item, delim)) {
+        result.push_back(item);
     }
-    
 
     return result;
 }
 
 vector<Object> readFileCreateColous() {
-    //criar aqui um array do tipo vector<Object> e retorna-lo
+    // criar aqui um array do tipo vector<Object> e retorna-lo
+
+    /*
+    string input("geeks\tfor\tgeeks");
+    vector<string> result;
+    boost::split(result, input, boost::is_any_of("\t"));
+
+    for (int i = 0; i < result.size(); i++)
+        cout << result[i] << endl;
+    return 0;
+    */
+    vector<Object> objects;
     ifstream file;
     file.open("../../output/tmp2.txt");
     string line;
+    vector<string> result;
     cout << "Reading file..." << endl;
-    while(getline (file, line)) {
-        vector<string> tokens = split(line, ' - ');
-        string colour_name = tokens[0];
-        string hsvMin = tokens[1];
-        string hsvMax = tokens[2];
-        string rgb = tokens[3];
-        string rgb_  = tokens[4];
-        cout << "nome: " << colour_name << " min " << hsvMin << "max  " << hsvMax << " --- " << rgb << " rgb__ " << rgb_ << endl;
+    string colour_name = "";
+    while (getline(file, line)) {
+        boost::split(result, line, boost::is_any_of(" - "));
+
+        cv::Scalar hsvMin;
+        cv::Scalar hsvMax;
+        cv::Scalar rgbColor;
+        int r, g, b;
+
+        for (int i = 0; i < result.size(); i++) {
+            boost::replace_all(result[i], "[", "");
+            boost::replace_all(result[i], "]", "");
+            boost::replace_all(result[i], ",", "");
+
+            colour_name = result[0];
+            stringstream ss;
+            int hmin, smin, vmin;
+            int hmax, smax, vmax;
+
+            ss << result[4];  
+            ss >> hmin;
+            ss.clear();
+            ss << result[5];
+            ss >> smin;
+            ss.clear();
+            ss << result[6];
+            ss >> vmin;
+            ss.clear();
+            ss << result[10];
+            ss >> hmax;
+            ss.clear();
+            ss << result[11];
+            ss >> smax;
+            ss.clear();
+            ss << result[12];
+            ss >> vmax;
+            ss.clear();
+            ss << result[14];
+            ss >> r;
+            ss.clear();
+            ss << result[15];
+            ss >> g;
+            ss.clear();
+            ss << result[16];
+            ss >> b;
+            ss.clear();
+
+
+            hsvMin = cv::Scalar(hmin, smin, vmin);
+            hsvMax = cv::Scalar(hmax, smax, vmax);
+            
+            
+        }
+        //cout << colour_name << " ----- " <<  hsvMin << " ---- " << hsvMax << " ----- " << rgbColor << endl;
+
+        Object ob(colour_name, hsvMin, hsvMax, r, g, b);
+        objects.push_back(ob);
+        // cout << "nome: " << colour_name << " min " << hsvMin << "max  " << hsvMax << " --- " << rgb << " rgb__ " << rgb_ << endl;
         /*int min_h = stoi(tokens[1]);
         int min_s = stoi(tokens[2]);
         int min_v = stoi(tokens[3]);
@@ -299,18 +362,14 @@ vector<Object> readFileCreateColous() {
         int r = stoi(tokens[7]);
         int g = stoi(tokens[8]);
         int b = stoi(tokens[9]);*/
-        //Object ob1(colour_name, min_h, min_s, min_v, max_h, max_s, max_v, r, g, b);
-        //objects.push_back(ob1);
+        // Object ob1(colour_name, min_h, min_s, min_v, max_h, max_s, max_v, r, g, b);
+        // objects.push_back(ob1);
     }
-
-    
-    
     file.close();
-    
-
-    //objetos com as informacoes das cores que estao no ficheiro
-    //po-los num array em q a main consiga aceder aos objetos
-    //correr normalmente
+    return objects;
+    // objetos com as informacoes das cores que estao no ficheiro
+    // po-los num array em q a main consiga aceder aos objetos
+    // correr normalmente
 }
 
 void selectColoursWithMouse() {
@@ -339,8 +398,8 @@ void selectColoursWithMouse() {
         if (keyVal == 113 || keyVal == 81) {  // q
             destroyAllWindows();
             capture.release();
-            readFileCreateColous();
-            // detectInRealTime();
+            vector<Object> new_objects = readFileCreateColous();
+            detectInRealTime(new_objects);
             break;
         } else if (keyVal == 115 || keyVal == 83) {  // S ou s
             snapshot = frame.clone();
@@ -349,43 +408,46 @@ void selectColoursWithMouse() {
     }
 }
 
-    int main(int argc, char *argv[]) {
-        int c;
-        int digit_optind = 0;
-        int option_index = 0;
-
-        struct option long_options[] = {
-            {"calibrate", required_argument, 0, 'c'},
-            {"add_colors", no_argument, 0, 'a'},
-            {"exit", no_argument, 0, 'e'}};
-
-        while ((c = getopt_long(argc, argv, "caen", long_options, &option_index)) != -1) {
-            int this_option_optind = optind ? optind : 1;
-            switch (c) {
-                case 'c':
-                    // opcao para calibrar a camara
-                    cout << "Calibrating Camera" << endl;
-                    // chamar aqui a funcao que calibra a camara
-                    break;
-                case 'a':
-                    cout << "Add colours..." << endl;
-                    // opcao para adicionar cores
-                    
-                    selectColoursWithMouse();
-                    // chamar a funcao que adiciona novas cores
-                    break;
-                case 'e':
-                    readFileCreateColous();
-                    cout << "Exiting..." << endl;
-                    exit(EXIT_SUCCESS);
-                case 'n':
-                    cout << "Detect LEGO pieces in Real Time" << endl;
-                    detectInRealTime();
-                    break;
-                default:
-                    cout << "USAGE: " << endl;
-            }
 int main(int argc, char *argv[]) {
+    int c;
+    int digit_optind = 0;
+    int option_index = 0;
+
+    struct option long_options[] = {
+        {"calibrate", required_argument, 0, 'c'},
+        {"add_colors", no_argument, 0, 'a'},
+        {"exit", no_argument, 0, 'e'}};
+
+    while ((c = getopt_long(argc, argv, "caen", long_options, &option_index)) != -1) {
+        int this_option_optind = optind ? optind : 1;
+        switch (c) {
+            case 'c':
+                // opcao para calibrar a camara
+                cout << "Calibrating Camera" << endl;
+                // chamar aqui a funcao que calibra a camara
+                break;
+            case 'a':
+                cout << "Add colours..." << endl;
+                // opcao para adicionar cores
+
+                selectColoursWithMouse();
+
+                // chamar a funcao que adiciona novas cores
+                break;
+            case 'e':
+                readFileCreateColous();
+                cout << "Exiting..." << endl;
+                exit(EXIT_SUCCESS);
+            case 'n':
+                cout << "Detect LEGO pieces in Real Time" << endl;
+                //detectInRealTime();
+                break;
+            default:
+                cout << "USAGE: " << endl;
+        }
+    }
+}
+/*int main(int argc, char *argv[]) {
     int c;
     int digit_optind = 0;
     int option_index = 0;
@@ -431,3 +493,4 @@ int main(int argc, char *argv[]) {
 
     exit(EXIT_SUCCESS);
 }
+*/
