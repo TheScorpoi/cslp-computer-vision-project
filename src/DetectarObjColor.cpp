@@ -30,6 +30,8 @@ const int MIN_OBJECT_AREA = 20 * 20;
 const int MAX_OBJECT_AREA = FRAME_HEIGHT * FRAME_WIDTH / 1.5;
 double PIXEL_SIZE_WIDTH = 0;
 double PIXEL_SIZE_HEIGHT = 0;
+int W = 0;
+int H = 0;
 
 /**
  * @brief This function is used to mark on the window the detected objects
@@ -44,6 +46,9 @@ double PIXEL_SIZE_HEIGHT = 0;
 
 string get_size(Rect c) {
     int w, h;
+    if (PIXEL_SIZE_HEIGHT==0 && PIXEL_SIZE_WIDTH==0) {
+        setPixelSize(c);
+    }
     if (PIXEL_SIZE_WIDTH>PIXEL_SIZE_HEIGHT) {
         w = c.width / PIXEL_SIZE_WIDTH;
         h = c.height / PIXEL_SIZE_HEIGHT;
@@ -157,25 +162,15 @@ void trackFilteredObject(Object theObject, Mat threshold, Mat HSV, Mat &cameraFe
     }
 }
 
-void calibrateCamera() {
-    int w, h;
-    cout << "Type piece's width: ";
-    cin >> w;
-    cout << "Type piece's height: ";
-    cin >> h;
-    // track an object until size is selected and get a Rect object
-    setPixelSize(c, w, h);
-}
-
-void setPixelSize(Rect c, int w, int h) {
+void setPixelSize(Rect c) {
     // saves the pixel size
-    if (w>h && c.width>c.height) {
-        PIXEL_SIZE_WIDTH = c.width/w;
-        PIXEL_SIZE_HEIGHT = c.height/h;
+    if (W>H && c.width>c.height) {
+        PIXEL_SIZE_WIDTH = c.width/W;
+        PIXEL_SIZE_HEIGHT = c.height/H;
     }
     else {
-        PIXEL_SIZE_WIDTH = c.width/h;
-        PIXEL_SIZE_HEIGHT = c.height/w;
+        PIXEL_SIZE_WIDTH = c.width/H;
+        PIXEL_SIZE_HEIGHT = c.height/W;
     }
 }
 
@@ -364,7 +359,13 @@ void selectColoursWithMouse() {
             switch (c) {
                 case 'c':
                     // opcao para calibrar a camara
-                    cout << "Calibrating Camera" << endl;
+                    cout << "Calibrating Camera..." << endl;
+                    cout << "Please, place a piece bellow the camera!" << endl;
+                    cout << "Type piece's width: ";
+                    cin >> W;
+                    cout << "Type piece's height: ";
+                    cin >> H;
+                    detectInRealTime();
                     // chamar aqui a funcao que calibra a camara
                     break;
                 case 'a':
