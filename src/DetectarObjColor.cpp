@@ -49,7 +49,7 @@ int H = 0;
 string get_size(Rect c) {
     int w, h;
     if (PIXEL_SIZE_HEIGHT == 0 && PIXEL_SIZE_WIDTH == 0) {
-        //setPixelSize(c);
+        setPixelSize(c);
     }
     if (PIXEL_SIZE_WIDTH > PIXEL_SIZE_HEIGHT) {
         w = c.width / PIXEL_SIZE_WIDTH;
@@ -427,7 +427,7 @@ int main(int argc, char *argv[]) {
                 cin >> W;
                 cout << "Type piece's height: ";
                 cin >> H;
-                //setPixelSize(c, W, H);
+                detectInRealTime();
                 // chamar aqui a funcao que calibra a camara
                 break;
             case 'a':
