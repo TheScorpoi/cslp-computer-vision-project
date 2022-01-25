@@ -32,6 +32,8 @@ const int MIN_OBJECT_AREA = 20 * 20;
 const int MAX_OBJECT_AREA = FRAME_HEIGHT * FRAME_WIDTH / 1.5;
 double PIXEL_SIZE_WIDTH = 0;
 double PIXEL_SIZE_HEIGHT = 0;
+int W = 0;
+int H = 0;
 
 /**
  * @brief This function is used to mark on the window the detected objects
@@ -46,6 +48,9 @@ double PIXEL_SIZE_HEIGHT = 0;
 
 string get_size(Rect c) {
     int w, h;
+    if (PIXEL_SIZE_HEIGHT == 0 && PIXEL_SIZE_WIDTH == 0) {
+        //setPixelSize(c);
+    }
     if (PIXEL_SIZE_WIDTH > PIXEL_SIZE_HEIGHT) {
         w = c.width / PIXEL_SIZE_WIDTH;
         h = c.height / PIXEL_SIZE_HEIGHT;
@@ -157,29 +162,18 @@ void trackFilteredObject(Object theObject, Mat threshold, Mat HSV, Mat &cameraFe
             putText(cameraFeed, "A LOT OF OBJECTS ON IMAGE", Point(0, 50), 1, 2, Scalar(0, 0, 255), 2);
     }
 }
-/*
-void calibrateCamera() {
-    int w, h;
-    cout << "Type piece's width: ";
-    cin >> w;
-    cout << "Type piece's height: ";
-    cin >> h;
-    // track an object until size is selected and get a Rect object
-    setPixelSize(c, w, h);
+
+void setPixelSize(Rect c) {
+    // saves the pixel size
+    if (W > H && c.width > c.height) {
+        PIXEL_SIZE_WIDTH = c.width / W;
+        PIXEL_SIZE_HEIGHT = c.height / H;
+    } else {
+        PIXEL_SIZE_WIDTH = c.width / H;
+        PIXEL_SIZE_HEIGHT = c.height / W;
+    }
 }
 
-void setPixelSize(Rect c, int w, int h) {
-    // saves the pixel size
-    if (w>h && c.width>c.height) {
-        PIXEL_SIZE_WIDTH = c.width/w;
-        PIXEL_SIZE_HEIGHT = c.height/h;
-    }
-    else {
-        PIXEL_SIZE_WIDTH = c.width/h;
-        PIXEL_SIZE_HEIGHT = c.height/w;
-    }
-}
-*/
 void detectInRealTime(vector<Object> objects) {
     Object blue("blue"), yellow("yellow"), red("red"), green("green");
     Object objArray[] = {Object("blue"), Object("yellow"), Object("red"), Object("green")};
@@ -202,32 +196,39 @@ void detectInRealTime(vector<Object> objects) {
             morphologicalOperations(threshold);
             trackFilteredObject(obj, threshold, HSV, cameraFeed);
         }
-        /* maneira estática
-        // BLUE
-        // antes de aplicar os operadores morfologicos fazer segmentacao para (por isto a preto e branco)
-        inRange(HSV, blue.getHSVmin(), blue.getHSVmax(), threshold);
-        morphologicalOperations(threshold);
-        trackFilteredObject(blue, threshold, HSV, cameraFeed);
-        // YELLOW
-        inRange(HSV, yellow.getHSVmin(), yellow.getHSVmax(), threshold);
-        morphologicalOperations(threshold);
-        trackFilteredObject(yellow, threshold, HSV, cameraFeed);
-        // RED
-        inRange(HSV, red.getHSVmin(), red.getHSVmax(), threshold);
-        morphologicalOperations(threshold);
-        trackFilteredObject(red, threshold, HSV, cameraFeed);
-        // GREEN
-        inRange(HSV, green.getHSVmin(), green.getHSVmax(), threshold);
-        morphologicalOperations(threshold);
-        trackFilteredObject(green, threshold, HSV, cameraFeed);
-        */
-        // imshow("windowName2",threshold);
-        // imshow("windowName1", HSV);
         imshow("Image", cameraFeed);
 
         waitKey(80);  // taxa de refresh da camara, > menor taxa, < maior taxa
     }
 }
+
+void detectInRealTime() {
+    Object blue("blue"), yellow("yellow"), red("red"), green("green");
+    Object new_objects[] = {Object("blue"), Object("yellow"), Object("red"), Object("green")};
+    Mat cameraFeed, threshold, HSV, blur;
+    VideoCapture capture;
+    capture.open(0);
+    // infinite loop, searching for the objects and displaying the result in the window named "Image"
+    while (1) {
+        // store image on cameraFeed
+        capture.read(cameraFeed);
+
+        GaussianBlur(cameraFeed, blur, Size(5, 5), 0, 0);
+
+        // convert BGR to HSV colorspace
+        cvtColor(blur, HSV, COLOR_BGR2HSV);
+
+        for (Object obj : new_objects) {
+            inRange(HSV, obj.getHSVmin(), obj.getHSVmax(), threshold);
+            morphologicalOperations(threshold);
+            trackFilteredObject(obj, threshold, HSV, cameraFeed);
+        }
+        imshow("Image", cameraFeed);
+
+        waitKey(80);  // taxa de refresh da camara, > menor taxa, < maior taxa
+    }
+}
+
 void on_mouse_click(int event, int x, int y, int flags, void *ptr) {
     if (event == cv::EVENT_LBUTTONDOWN) {
         cv::Mat *snapshot = (cv::Mat *)ptr;
@@ -314,7 +315,7 @@ vector<Object> readFileCreateColous() {
             int hmin, smin, vmin;
             int hmax, smax, vmax;
 
-            ss << result[4];  
+            ss << result[4];
             ss >> hmin;
             ss.clear();
             ss << result[5];
@@ -342,13 +343,10 @@ vector<Object> readFileCreateColous() {
             ss >> b;
             ss.clear();
 
-
             hsvMin = cv::Scalar(hmin, smin, vmin);
             hsvMax = cv::Scalar(hmax, smax, vmax);
-            
-            
         }
-        //cout << colour_name << " ----- " <<  hsvMin << " ---- " << hsvMax << " ----- " << rgbColor << endl;
+        // cout << colour_name << " ----- " <<  hsvMin << " ---- " << hsvMax << " ----- " << rgbColor << endl;
 
         Object ob(colour_name, hsvMin, hsvMax, r, g, b);
         objects.push_back(ob);
@@ -423,53 +421,20 @@ int main(int argc, char *argv[]) {
         switch (c) {
             case 'c':
                 // opcao para calibrar a camara
-                cout << "Calibrating Camera" << endl;
+                cout << "Calibrating Camera..." << endl;
+                cout << "Please, place a piece bellow the camera!" << endl;
+                cout << "Type piece's width: ";
+                cin >> W;
+                cout << "Type piece's height: ";
+                cin >> H;
+                //setPixelSize(c, W, H);
                 // chamar aqui a funcao que calibra a camara
                 break;
             case 'a':
                 cout << "Add colours..." << endl;
                 // opcao para adicionar cores
-
-                selectColoursWithMouse();
-
                 // chamar a funcao que adiciona novas cores
-                break;
-            case 'e':
-                readFileCreateColous();
-                cout << "Exiting..." << endl;
-                exit(EXIT_SUCCESS);
-            case 'n':
-                cout << "Detect LEGO pieces in Real Time" << endl;
-                //detectInRealTime();
-                break;
-            default:
-                cout << "USAGE: " << endl;
-        }
-    }
-}
-/*int main(int argc, char *argv[]) {
-    int c;
-    int digit_optind = 0;
-    int option_index = 0;
-    struct option long_options[] = {
-        {"calibrate", required_argument, 0, 'c'},
-        {"add_colors", no_argument, 0, 'a'},
-        {"exit", no_argument, 0, 'e'}};
-
-    while ((c = getopt_long(argc, argv, "caen", long_options, &option_index)) != -1) {
-        int this_option_optind = optind ? optind : 1;
-        switch (c) {
-            case 'c':
-                // opcao para calibrar a camara
-                cout << "Calibrating Camera" << endl;
-                // chamar aqui a funcao que calibra a camara
-                calibrateCamera();
-                break;
-            case 'a':
-                cout << "Add colours..." << endl;
-                // opcao para adicionar cores
                 selectColoursWithMouse();
-                // chamar a funcao que adiciona novas cores
                 break;
             case 'e':
                 readFileCreateColous();
@@ -483,14 +448,90 @@ int main(int argc, char *argv[]) {
                 cout << "USAGE: " << endl;
         }
     }
-
-    if (optind < argc) {
-        printf("non-option ARGV-elements: ");
-        while (optind < argc)
-            printf("%s ", argv[optind++]);
-        printf("\n");
-    }
-
-    exit(EXIT_SUCCESS);
 }
-*/
+    /*int main(int argc, char *argv[]) {
+        int c;
+        int digit_optind = 0;
+        int option_index = 0;
+
+        struct option long_options[] = {
+            {"calibrate", required_argument, 0, 'c'},
+            {"add_colors", no_argument, 0, 'a'},
+            {"exit", no_argument, 0, 'e'}};
+
+        while ((c = getopt_long(argc, argv, "caen", long_options, &option_index)) != -1) {
+            int this_option_optind = optind ? optind : 1;
+            switch (c) {
+                case 'c':
+                    // opcao para calibrar a camara
+                    cout << "Calibrating Camera" << endl;
+                    // chamar aqui a funcao que calibra a camara
+                    break;
+                case 'a':
+                    cout << "Add colours..." << endl;
+                    // opcao para adicionar cores
+
+                    selectColoursWithMouse();
+
+                    // chamar a funcao que adiciona novas cores
+                    break;
+                case 'e':
+                    readFileCreateColous();
+                    cout << "Exiting..." << endl;
+                    exit(EXIT_SUCCESS);
+                case 'n':
+                    cout << "Detect LEGO pieces in Real Time" << endl;
+                    //detectInRealTime();
+                    break;
+                default:
+                    cout << "USAGE: " << endl;
+            }
+        }
+    }*/
+    /*int main(int argc, char *argv[]) {
+        int c;
+        int digit_optind = 0;
+        int option_index = 0;
+        struct option long_options[] = {
+            {"calibrate", required_argument, 0, 'c'},
+            {"add_colors", no_argument, 0, 'a'},
+            {"exit", no_argument, 0, 'e'}};
+
+        while ((c = getopt_long(argc, argv, "caen", long_options, &option_index)) != -1) {
+            int this_option_optind = optind ? optind : 1;
+            switch (c) {
+                case 'c':
+                    // opcao para calibrar a camara
+                    cout << "Calibrating Camera" << endl;
+                    // chamar aqui a funcao que calibra a camara
+                    calibrateCamera();
+                    break;
+                case 'a':
+                    cout << "Add colours..." << endl;
+                    // opcao para adicionar cores
+                    selectColoursWithMouse();
+                    // chamar a funcao que adiciona novas cores
+                    break;
+                case 'e':
+                    readFileCreateColous();
+                    cout << "Exiting..." << endl;
+                    exit(EXIT_SUCCESS);
+                case 'n':
+                    cout << "Detect LEGO pieces in Real Time" << endl;
+                    detectInRealTime();
+                    break;
+                default:
+                    cout << "USAGE: " << endl;
+            }
+        }
+
+        if (optind < argc) {
+            printf("non-option ARGV-elements: ");
+            while (optind < argc)
+                printf("%s ", argv[optind++]);
+            printf("\n");
+        }
+
+        exit(EXIT_SUCCESS);
+    }
+    */
