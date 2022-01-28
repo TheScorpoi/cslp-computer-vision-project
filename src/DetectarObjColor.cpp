@@ -35,6 +35,17 @@ double PIXEL_SIZE_HEIGHT = 0;
 int W = 0;
 int H = 0;
 
+void setPixelSize(Rect c) {
+    // saves the pixel size
+    if (W > H && c.width > c.height) {
+        PIXEL_SIZE_WIDTH = c.width / W;
+        PIXEL_SIZE_HEIGHT = c.height / H;
+    } else {
+        PIXEL_SIZE_WIDTH = c.width / H;
+        PIXEL_SIZE_HEIGHT = c.height / W;
+    }
+}
+
 /**
  * @brief This function is used to mark on the window the detected objects
  * with a contours with color's object and a text with the color's name
@@ -49,7 +60,7 @@ int H = 0;
 string get_size(Rect c) {
     int w, h;
     if (PIXEL_SIZE_HEIGHT == 0 && PIXEL_SIZE_WIDTH == 0) {
-        //setPixelSize(c);
+        setPixelSize(c);
     }
     if (PIXEL_SIZE_WIDTH > PIXEL_SIZE_HEIGHT) {
         w = c.width / PIXEL_SIZE_WIDTH;
@@ -163,17 +174,6 @@ void trackFilteredObject(Object theObject, Mat threshold, Mat HSV, Mat &cameraFe
     }
 }
 
-void setPixelSize(Rect c) {
-    // saves the pixel size
-    if (W > H && c.width > c.height) {
-        PIXEL_SIZE_WIDTH = c.width / W;
-        PIXEL_SIZE_HEIGHT = c.height / H;
-    } else {
-        PIXEL_SIZE_WIDTH = c.width / H;
-        PIXEL_SIZE_HEIGHT = c.height / W;
-    }
-}
-
 void detectInRealTime(vector<Object> objects) {
     Object blue("blue"), yellow("yellow"), red("red"), green("green");
     Object objArray[] = {Object("blue"), Object("yellow"), Object("red"), Object("green")};
@@ -270,26 +270,13 @@ vector<string> split(const string &s, char delim) {
     vector<string> result;
     stringstream ss(s);
     string item;
-
     while (getline(ss, item, delim)) {
         result.push_back(item);
     }
-
     return result;
 }
 
 vector<Object> readFileCreateColous() {
-    // criar aqui um array do tipo vector<Object> e retorna-lo
-
-    /*
-    string input("geeks\tfor\tgeeks");
-    vector<string> result;
-    boost::split(result, input, boost::is_any_of("\t"));
-
-    for (int i = 0; i < result.size(); i++)
-        cout << result[i] << endl;
-    return 0;
-    */
     vector<Object> objects;
     ifstream file;
     file.open("../../output/tmp2.txt");
@@ -346,28 +333,12 @@ vector<Object> readFileCreateColous() {
             hsvMin = cv::Scalar(hmin, smin, vmin);
             hsvMax = cv::Scalar(hmax, smax, vmax);
         }
-        // cout << colour_name << " ----- " <<  hsvMin << " ---- " << hsvMax << " ----- " << rgbColor << endl;
 
         Object ob(colour_name, hsvMin, hsvMax, r, g, b);
         objects.push_back(ob);
-        // cout << "nome: " << colour_name << " min " << hsvMin << "max  " << hsvMax << " --- " << rgb << " rgb__ " << rgb_ << endl;
-        /*int min_h = stoi(tokens[1]);
-        int min_s = stoi(tokens[2]);
-        int min_v = stoi(tokens[3]);
-        int max_h = stoi(tokens[4]);
-        int max_s = stoi(tokens[5]);
-        int max_v = stoi(tokens[6]);
-        int r = stoi(tokens[7]);
-        int g = stoi(tokens[8]);
-        int b = stoi(tokens[9]);*/
-        // Object ob1(colour_name, min_h, min_s, min_v, max_h, max_s, max_v, r, g, b);
-        // objects.push_back(ob1);
     }
     file.close();
     return objects;
-    // objetos com as informacoes das cores que estao no ficheiro
-    // po-los num array em q a main consiga aceder aos objetos
-    // correr normalmente
 }
 
 void selectColoursWithMouse() {
