@@ -1,18 +1,18 @@
 # cslp-computer-vision-project
 
 O objetivo do projeto é desenvolver software capaz de detetar peças de LEGO, a sua cor, e o seu tamanho.    
-O software é capaz de reconhecer mulitplas peças de tamanho variável, bem como de várias cores diferentes, em tempo real.   
-A maneira implementada para reconhecer a cor das peças, é verificar se uma determinada região (entenda-se por região, um conjunto alargado de pixeis com valores semelhantes), pertence a alguma cor definida.  
+O software é capaz de reconhecer mulitplas peças de tamanho variável, bem como de várias cores diferentes, em tempo real.
+A maneira implementada para reconhecer a cor das peças, é verificar se uma determinada região (entenda-se por região, um conjunto alargado de pixeis com valores semelhantes), pertence a alguma cor definida.
 Para determinar o tamanho da peça, está é feita através de calculos com a largura e o comprimento dos contornos que a peça possui.  
 O projeto foi todo ele desenvolvido para correr em tempo real num Raspberry Pi 4, com recurso a uma câmara instalada no mesmo.
 
 
 ## Pre-requisitos:
 Relativamente aos pre-requisitos, é necessário:
-- Instalação de um compilado de [C++](https://linuxconfig.org/how-to-install-g-the-c-compiler-on-ubuntu-18-04-bionic-beaver-linux).
+- Instalação de um compilador de [C++](https://linuxconfig.org/how-to-install-g-the-c-compiler-on-ubuntu-18-04-bionic-beaver-linux).
 - Instalação do [CMake](https://cgold.readthedocs.io/en/latest/first-step/installation.html).
 - A biblioteca do [OpenCV](https://docs.opencv.org/4.x/df/d65/tutorial_table_of_content_introduction.html).
-- Instalação da biblioteca boost para C++: ``` 
+- Instalação da biblioteca *boost* para C++: ``` 
 sudo apt-get install libboost-all-dev ```
 - Raspberry Pi 4 (para correr em tempo real o códgo desenvolvido).
 
