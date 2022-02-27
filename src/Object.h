@@ -13,11 +13,11 @@ class Object {
     ~Object(void);
 
     Object(string name);
-    Object(string name, Scalar hsvMin, Scalar hsvMax, int r, int g, int b) {
+    Object(string name, Scalar hsvMin, Scalar hsvMax, Scalar rgbColor) {
         this->type = name;
         this->HSVmin = hsvMin;
         this->HSVmax = hsvMax;
-        this->Color = Scalar(r, g, b);
+        this->Color = rgbColor;
     };
 
     int getXPos();
