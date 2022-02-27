@@ -247,7 +247,6 @@ void detectInRealTime(vector<Object> objects) {
         cvtColor(blur, HSV, COLOR_BGR2HSV);
 
         for (Object obj : new_objects) {
-            cout << obj.getType() << " -> "<<obj.getHSVmin() << " " << obj.getHSVmax() << obj.getColor() << endl;
             inRange(HSV, obj.getHSVmin(), obj.getHSVmax(), threshold);
             morphologicalOperations(threshold);
             trackFilteredObject(obj, threshold, HSV, cameraFeed);
@@ -278,8 +277,6 @@ void detectInRealTime() {
         cvtColor(blur, HSV, COLOR_BGR2HSV);
 
         for (Object obj : new_objects) {
-            cout << obj.getType() << " -> "<<obj.getHSVmin() << " " << obj.getHSVmax() << obj.getColor() << endl;
-
             inRange(HSV, obj.getHSVmin(), obj.getHSVmax(), threshold);
             morphologicalOperations(threshold);
             trackFilteredObject(obj, threshold, HSV, cameraFeed);
@@ -307,7 +304,6 @@ void on_mouse_click(int event, int x, int y, int flags, void *ptr) {
         cv::Mat3b rgb;
         cv::cvtColor(bgr, hsv, cv::COLOR_BGR2HSV);
         cv::cvtColor(bgr, rgb, cv::COLOR_BGR2RGB);
-        cout << "AQUIIIII" << rgb << endl;
 
         cv::Vec3b hsvPixel(hsv.at<cv::Vec3b>(0, 0));
         cv::Vec3b rgbPixel(rgb.at<cv::Vec3b>(0, 0));
@@ -325,7 +321,7 @@ void on_mouse_click(int event, int x, int y, int flags, void *ptr) {
         string colour_name;
         cout << "Colour Name? ";
         cin >> colour_name;
-        string filename("../../output/tmp2.txt");
+        string filename("../../output/color_file.txt");
         ofstream out(filename.c_str(), fstream::app);  // append mode on
         Object ob1(colour_name, minHSV, maxHSV, rgbColor);
         out << ob1;
@@ -345,7 +341,7 @@ vector<string> split(const string &s, char delim) {
 vector<Object> readFileCreateColous() {
     vector<Object> objects;
     ifstream file;
-    file.open("../../output/tmp2.txt");
+    file.open("../../output/color_file.txt");
     string line;
     vector<string> result;
     cout << "Reading file..." << endl;
@@ -393,21 +389,18 @@ vector<Object> readFileCreateColous() {
             boost::replace_all(result[15], "]", "");
             boost::replace_all(result[15], ",", "");
             ss << result[15];
-            cout << "result 15: r -- " << result[15] << endl;
             ss >> r;
             ss.clear();
             boost::replace_all(result[16], "[", "");
             boost::replace_all(result[16], "]", "");
             boost::replace_all(result[16], ",", "");
             ss << result[16];
-            cout << "result 16: g -- " << result[16] << endl;
             ss >> g;
             ss.clear();
             boost::replace_all(result[17], "[", "");
             boost::replace_all(result[17], "]", "");
             boost::replace_all(result[17], ",", "");
             ss << result[17];
-            cout << "result 17: b -- " << result[17] << endl;
             ss >> b;
             ss.clear();
 
@@ -415,7 +408,6 @@ vector<Object> readFileCreateColous() {
             hsvMax = cv::Scalar(hmax, smax, vmax);
             rgbColor = cv::Scalar(b, g, r);
         }
-        cout << "rgb AQUIIIIII QUE JA NS ONDE ESTA ESTA MERDA FDS" << rgbColor << endl;
         Object ob(colour_name, hsvMin, hsvMax, rgbColor);
         objects.push_back(ob);
     }
