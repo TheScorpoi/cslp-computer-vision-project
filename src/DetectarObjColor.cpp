@@ -27,7 +27,7 @@ const int MAX_OBJECT_AREA = FRAME_HEIGHT * FRAME_WIDTH / 1.5;
 double PIXEL_SIZE_WIDTH = 0.0;
 double PIXEL_SIZE_HEIGHT = 0.0;
 double W = 2.0;
-double H = 1.0;
+double H = 2.0 ;
 bool IS_CAMERA_CALIBRATED = false;
 
 void setPixelSize(Rect c) {
@@ -150,6 +150,7 @@ void morphologicalOperations(Mat &thresh) {
     erode(thresh, thresh, erodeElement);
 
     Mat dilateElement = getStructuringElement(MORPH_RECT, Size(9, 9));
+    dilate(thresh, thresh, dilateElement);
     dilate(thresh, thresh, dilateElement);
     dilate(thresh, thresh, dilateElement);
 }
