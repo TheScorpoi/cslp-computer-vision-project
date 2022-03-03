@@ -6,6 +6,13 @@ A maneira implementada para reconhecer a cor das peças, é verificar se uma det
 Para determinar o tamanho da peça, está é feita através de calculos com a largura e o comprimento dos contornos que a peça possui.  
 O projeto foi todo ele desenvolvido para correr em tempo real num Raspberry Pi 4, com recurso a uma câmara instalada no mesmo.
 
+# Demo
+
+<a href="https://youtu.be/4u5CzZx7VwQ">
+    <img src="./images/thumbnail.png">
+  </a>
+  <hr>
+
 
 ## Pre-requisitos:
 Relativamente aos pre-requisitos, é necessário:
